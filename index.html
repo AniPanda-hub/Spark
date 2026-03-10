@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Spark"/>
+<meta name="theme-color" content="#080810"/>
+<title>Spark — Idea Vault</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080810;--bg2:#0f0f1a;--bg3:#161622;--bg4:#1e1e2e;
+  --border:#252535;--border2:#1a1a28;
+  --gold:#c9a96e;--gold2:#e0c08a;--gold-dim:rgba(201,169,110,0.15);
+  --text:#f2ede4;--text2:#c8c0b0;--text3:#8a8070;--text4:#4a4540;
+  --red:#e05555;
+  --ff-d:'Cormorant Garamond',Georgia,serif;
+  --ff-b:'DM Sans',sans-serif;--r:10px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--ff-b);overflow-x:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px}
+a{color:var(--gold);text-decoration:none}
+input,textarea,select{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--ff-b);border-radius:6px;outline:none;transition:border-color .2s;width:100%}
+input:focus,textarea:focus,select:focus{border-color:var(--gold)}
+select option{background:var(--bg3)}
+button{cursor:pointer;font-family:var(--ff-b);border-radius:6px;transition:all .2s;border:none}
+.btn-p{background:var(--gold);color:var(--bg);font-weight:500}
+.btn-p:hover{background:var(--gold2);transform:translateY(-1px)}
+.btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-g{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.btn-g:hover{background:var(--gold-dim)}
+.tag{background:var(--gold-dim);color:var(--gold);font-size:11px;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.hidden{display:none!important}
+.fade-in{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.pulse{display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1s infinite;margin-right:6px}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* Auth */
+#auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;gap:24px}
+.logo-big{font-family:var(--ff-d);font-size:56px;color:var(--gold);letter-spacing:-1px}
+.tagline{font-size:13px;color:var(--text3);letter-spacing:.1em}
+#btn-google-signin{display:flex;align-items:center;gap:10px;background:#fff;color:#222;padding:12px 26px;border-radius:8px;font-size:15px;font-weight:500;border:none;box-shadow:0 2px 16px rgba(0,0,0,.4);cursor:pointer}
+#btn-google-signin:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.5)}
+#btn-google-signin img{width:20px;height:20px}
+
+/* Header */
+#header{border-bottom:1px solid var(--border2);padding:0 20px;position:sticky;top:0;z-index:10;background:rgba(8,8,16,.94);backdrop-filter:blur(12px)}
+#header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px;gap:10px}
+.logo{font-family:var(--ff-d);font-size:22px;color:var(--gold);letter-spacing:-.5px}
+.logo sub{font-size:9px;color:var(--text4);letter-spacing:.12em;font-family:var(--ff-b);margin-left:6px;vertical-align:middle}
+.view-tabs{display:flex;gap:2px}
+.tab{background:none;border:none;color:var(--text3);font-size:12px;padding:5px 10px;border-radius:4px}
+.tab.active{background:var(--gold-dim);color:var(--gold)}
+.hright{display:flex;align-items:center;gap:8px}
+#user-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--gold);cursor:pointer;object-fit:cover}
+#btn-capture{padding:7px 14px;font-size:13px}
+
+/* Filters */
+#filters{border-bottom:1px solid var(--border2);padding:9px 20px}
+#filters-inner{max-width:1200px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#search{padding:7px 12px;font-size:13px;flex:1 1 160px;min-width:130px}
+.fsel{padding:7px 10px;font-size:12px;cursor:pointer;width:auto;min-width:110px}
+#count{font-size:12px;color:var(--text4);margin-left:auto;white-space:nowrap}
+
+/* Main */
+#main{max-width:1200px;margin:0 auto;padding:24px 20px}
+#empty{text-align:center;padding:80px 20px;color:var(--text4)}
+#empty .sym{font-family:var(--ff-d);font-size:44px;margin-bottom:14px}
+#empty h2{font-family:var(--ff-d);font-size:20px;color:var(--text4);margin-bottom:6px}
+
+/* Bubble */
+#bubble-wrap{width:100%;height:calc(100vh - 165px);position:relative;overflow:hidden;border-radius:var(--r);background:radial-gradient(ellipse at 50% 40%,#12122a 0%,var(--bg) 70%)}
+.bubble{position:absolute;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid transparent;transition:transform .2s,box-shadow .2s,border-color .2s;user-select:none}
+.bubble:hover{transform:scale(1.1)!important;z-index:5;border-color:var(--gold);box-shadow:0 0 32px rgba(201,169,110,.35)}
+.bubble img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.bubble .bb-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;border-radius:50%}
+.bubble .bb-title{font-family:var(--ff-d);font-size:12px;color:var(--text);line-height:1.3;word-break:break-word;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.bubble .bb-overlay{position:absolute;inset:0;border-radius:50%;background:linear-gradient(transparent 40%,rgba(0,0,0,.7));pointer-events:none}
+.b-tip{position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--text2);pointer-events:none;z-index:20;max-width:200px;box-shadow:0 4px 20px rgba(0,0,0,.5);white-space:nowrap}
+
+/* Gallery */
+#gallery{columns:280px 3;gap:14px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .25s;break-inside:avoid;margin-bottom:14px}
+.card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 12px 40px rgba(201,169,110,.12)}
+.card img,.card video{width:100%;max-height:180px;object-fit:cover;display:block}
+.card-body{padding:12px 14px}
+.card-title{font-family:var(--ff-d);font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px}
+.card-desc{font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:7px}
+.card-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px}
+.card-date{font-size:11px;color:var(--text4)}
+.card-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+
+/* Timeline */
+#timeline{display:flex;flex-direction:column;gap:32px}
+.mo-label{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.mo-label span{font-family:var(--ff-d);font-size:18px;color:var(--gold);font-style:italic}
+.mo-div{flex:1;height:1px;background:var(--border2)}
+.tl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .2s;display:flex;margin-bottom:8px}
+.tl-card:hover{border-color:var(--gold)}
+.tl-thumb{width:70px;object-fit:cover;flex-shrink:0}
+.tl-body{padding:11px 14px;flex:1;display:flex;gap:10px;align-items:flex-start}
+.tl-info{flex:1;min-width:0}
+.tl-title{font-family:var(--ff-d);font-size:15px;font-weight:600;margin-bottom:4px}
+.tl-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:5px}
+.tl-meta{text-align:right;flex-shrink:0}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:50;display:flex;align-items:center;justify-content:center;padding:14px}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:100%;max-width:600px;max-height:93vh;overflow-y:auto}
+.mh{display:flex;justify-content:space-between;align-items:center;padding:20px 22px 0}
+.mh-title{font-family:var(--ff-d);font-size:19px;color:var(--gold)}
+.mc{background:none;border:none;color:var(--text4);font-size:22px;line-height:1;padding:2px 6px}
+.mc:hover{color:var(--text)}
+.mb{padding:16px 22px 22px}
+.fg{display:flex;flex-direction:column;gap:11px}
+.fl{font-size:11px;color:var(--text3);margin-bottom:4px;letter-spacing:.07em}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fi{padding:9px 12px;font-size:13px}
+.fta{padding:9px 12px;font-size:13px;resize:vertical;line-height:1.6}
+.fsel2{padding:9px 10px;font-size:13px;cursor:pointer}
+.voice-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px}
+.ff{display:flex;gap:8px;margin-top:4px}
+.stabs{display:flex;gap:2px;background:var(--bg);border-radius:6px;padding:3px}
+.stab{background:none;border:none;color:var(--text3);font-size:12px;padding:6px 12px;border-radius:4px;flex:1}
+.stab.active{background:var(--bg3);color:var(--gold)}
+.uzone{border:1px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--bg)}
+.uzone:hover{border-color:var(--gold)}
+.uzone .uz-icon{font-size:24px;margin-bottom:6px}
+.uzone p{font-size:12px;color:var(--text3)}
+.uzone input{display:none}
+.prog-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:6px;display:none}
+.prog-bar-inner{height:100%;background:var(--gold);border-radius:2px;transition:width .3s}
+
+/* Annotation */
+#annot-overlay{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+#annot-canvas{border:2px solid var(--border);border-radius:8px;cursor:crosshair;max-width:95vw;max-height:65vh;touch-action:none;display:block}
+.annot-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.ac{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s;flex-shrink:0}
+.ac.sel{border-color:#fff}
+.a-size{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
+.a-size input{width:80px}
+
+/* Detail */
+#detail-overlay .modal{max-width:700px}
+.d-img{width:100%;max-height:300px;object-fit:cover;border-radius:14px 14px 0 0;display:none}
+.d-vid{width:100%;max-height:280px;display:none;border-radius:14px 14px 0 0}
+.detail-body{padding:20px 22px}
+.d-title{font-family:var(--ff-d);font-size:22px;font-weight:600;line-height:1.3;flex:1}
+.d-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:10px}
+.d-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.d-mood-tag{background:rgba(201,169,110,.2);color:var(--gold);padding:4px 10px;border-radius:20px;font-size:12px}
+.d-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:14px}
+.dsec{margin-bottom:12px}
+.dsec-lbl{font-size:11px;color:var(--text3);margin-bottom:5px;letter-spacing:.07em}
+.d-footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:12px;border-top:1px solid var(--border2)}
+.btn-del{background:none;border:1px solid #3a2a2a;color:#884444;padding:6px 12px;font-size:12px}
+.btn-del:hover{background:rgba(136,68,68,.1)}
+.btn-annot{background:none;border:1px solid var(--border);color:var(--text3);padding:6px 12px;font-size:12px}
+.btn-annot:hover{border-color:var(--gold);color:var(--gold)}
+.doc-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px}
+
+/* Loading & Toast */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;flex-direction:column;gap:16px}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--bg2);border:1px solid var(--border);color:var(--text2);padding:10px 20px;border-radius:30px;font-size:13px;z-index:999;transition:transform .3s;pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:600px){
+  #gallery{columns:1}
+  .fr{grid-template-columns:1fr}
+  .modal{border-radius:18px 18px 0 0;position:fixed;bottom:0;left:0;right:0;max-width:100%;max-height:95vh}
+  .overlay{align-items:flex-end;padding:0}
+  #detail-overlay .modal{max-width:100%}
+  .logo sub{display:none}
+  #btn-capture{padding:7px 11px;font-size:12px}
+  .tab{font-size:11px;padding:4px 7px}
+  .stab{font-size:11px;padding:5px 8px}
+}
+@media(min-width:601px) and (max-width:900px){#gallery{columns:2}}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text3)">Loading Spark…</span></div>
+
+<!-- Auth -->
+<div id="auth-screen" class="hidden">
+  <div class="logo-big">✦ Spark</div>
+  <div class="tagline">YOUR PERSONAL IDEA VAULT</div>
+  <button id="btn-google-signin">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"/>
+    Continue with Google
+  </button>
+  <p style="font-size:12px;color:var(--text4)">Syncs across all your devices · Free forever</p>
+</div>
+
+<!-- App -->
+<div id="app" class="hidden">
+  <div id="header">
+    <div id="header-inner">
+      <div class="logo">Spark <sub>IDEA VAULT</sub></div>
+      <div class="view-tabs">
+        <button class="tab active" data-view="bubbles" onclick="switchView('bubbles')">◉ Bubbles</button>
+        <button class="tab" data-view="gallery" onclick="switchView('gallery')">⊞ Gallery</button>
+        <button class="tab" data-view="timeline" onclick="switchView('timeline')">◎ Timeline</button>
+      </div>
+      <div class="hright">
+        <button class="btn-p btn" id="btn-capture" onclick="openCapture()">+ Capture</button>
+        <img id="user-avatar" src="" alt="" title="Sign out" onclick="doSignOut()"/>
+      </div>
+    </div>
+  </div>
+
+  <div id="filters">
+    <div id="filters-inner">
+      <input type="text" id="search" placeholder="🔍 Search ideas, tags…" oninput="renderIdeas()"/>
+      <select class="fsel" id="filter-cat" onchange="renderIdeas()">
+        <option value="All">All Categories</option>
+        <option>Design</option><option>Tech</option><option>Business</option>
+        <option>Life</option><option>Art</option><option>Science</option><option>Other</option>
+      </select>
+      <select class="fsel" id="filter-mood" onchange="renderIdeas()">
+        <option value="All">All Moods</option>
+        <option>⚡ Excited</option><option>🤔 Curious</option><option>😌 Calm</option>
+        <option>🔥 Urgent</option><option>💡 Inspired</option><option>🌀 Confused</option>
+      </select>
+      <span id="count"></span>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="empty" class="hidden">
+      <div class="sym">✦</div>
+      <h2>No sparks yet</h2>
+      <p style="font-size:13px;color:var(--text4)">Capture your first idea before it fades</p>
+    </div>
+    <div id="bubble-wrap"></div>
+    <div id="gallery" style="display:none"></div>
+    <div id="timeline" style="display:none"></div>
+  </div>
+</div>
+
+<!-- Capture Modal -->
+<div class="overlay hidden" id="capture-overlay" onclick="oClick(event,'capture-overlay')">
+  <div class="modal fade-in">
+    <div class="mh">
+      <span class="mh-title">Capture a Spark ✦</span>
+      <button class="mc" onclick="closeCapture()">✕</button>
+    </div>
+    <div class="mb">
+      <div class="fg">
+        <div class="stabs">
+          <button class="stab active" onclick="showSec('basic',this)">💡 Idea</button>
+          <button class="stab" onclick="showSec('media',this)">📸 Media</button>
+          <button class="stab" onclick="showSec('docs',this)">📄 Docs</button>
+          <button class="stab" onclick="showSec('video',this)">🎬 Video</button>
+          <button class="stab" onclick="showSec('meta',this)">🏷 Tags</button>
+        </div>
+
+        <div id="sec-basic">
+          <input class="fi" id="f-title" placeholder="What's the idea? *" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;margin-bottom:10px"/>
+          <textarea class="fta" id="f-desc" rows="5" placeholder="Describe the moment — what you felt, why it matters, what sparked it…"></textarea>
+        </div>
+
+        <div id="sec-media" class="hidden">
+          <div class="uzone" onclick="document.getElementById('f-img-in').click()">
+            <input type="file" id="f-img-in" accept="image/*" onchange="handleImg(event)"/>
+            <div class="uz-icon">📸</div>
+            <p>Tap to add image (will be compressed)</p>
+          </div>
+          <img id="f-img-prev" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:8px"/>
+          <div class="voice-box" style="margin-top:10px">
+            <div class="fl">🎙 VOICE NOTE</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn-g btn" id="rec-btn" style="padding:7px 14px;font-size:13px" onclick="toggleRec()">● Start Recording</button>
+              <span id="rec-time" style="font-size:12px;color:var(--text3);display:none"></span>
+            </div>
+            <audio id="f-audio" controls style="display:none;margin-top:8px;width:100%"></audio>
+            <button id="clear-audio" onclick="clearAudio()" style="display:none;background:none;border:none;color:var(--text4);font-size:12px;margin-top:4px">✕ Remove</button>
+          </div>
+        </div>
+
+        <div id="sec-docs" class="hidden">
+          <div class="uzone" onclick="document.getElementById('f-doc-in').click()">
+            <input type="file" id="f-doc-in" accept=".pdf,.doc,.docx,.txt" onchange="handleDoc(event)"/>
+            <div class="uz-icon">📄</div>
+            <p>PDF, Word (.docx), or Text (.txt)</p>
+            <p style="margin-top:4px;font-size:11px;color:var(--text4)">Stored as base64 · stays free</p>
+          </div>
+          <div id="f-doc-prev" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-top:8px;font-size:13px;color:var(--text2)"></div>
+          <div class="prog-bar" id="doc-prog"><div class="prog-bar-inner" id="doc-prog-inner" style="width:0%"></div></div>
+        </div>
+
+        <div id="sec-video" class="hidden">
+          <div class="fl" style="margin-bottom:6px">PASTE VIDEO LINK</div>
+          <input class="fi" id="f-vid-url" placeholder="Instagram Reel, YouTube, TikTok, Twitter/X URL…"/>
+          <p style="font-size:11px;color:var(--text4);margin-top:5px">Your idea note will appear alongside the link when you open it</p>
+          <div style="margin-top:14px">
+            <div class="fl" style="margin-bottom:6px">OR UPLOAD SHORT VIDEO (max ~5MB recommended)</div>
+            <div class="uzone" onclick="document.getElementById('f-vid-in').click()">
+              <input type="file" id="f-vid-in" accept="video/*" onchange="handleVid(event)"/>
+              <div class="uz-icon">🎬</div>
+              <p>MP4, MOV, WebM</p>
+            </div>
+            <div id="f-vid-prev" style="display:none;margin-top:8px">
+              <video id="f-vid-el" controls style="width:100%;border-radius:8px;max-height:180px"></video>
+            </div>
+          </div>
+        </div>
+
+        <div id="sec-meta" class="hidden">
+          <div class="fr" style="margin-bottom:10px">
+            <div><div class="fl">MOOD</div>
+              <select class="fsel2" id="f-mood">
+                <option>⚡ Excited</option><option>🤔 Curious</option><option>😌 Calm</option>
+                <option>🔥 Urgent</option><option>💡 Inspired</option><option>🌀 Confused</option>
+              </select>
+            </div>
+            <div><div class="fl">CATEGORY</div>
+              <select class="fsel2" id="f-cat">
+                <option>Design</option><option>Tech</option><option>Business</option>
+                <option>Life</option><option>Art</option><option>Science</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <input class="fi" id="f-tags" placeholder="Tags (comma separated): ux, mobile, future…"/>
+        </div>
+
+        <div id="save-status" style="font-size:12px;color:var(--text3);text-align:center;display:none">Saving spark…</div>
+        <div class="ff">
+          <button class="btn-g btn" style="flex:1;padding:10px;font-size:13px" onclick="closeCapture()">Cancel</button>
+          <button class="btn-p btn" id="btn-save" style="flex:2;padding:10px;font-size:14px" onclick="saveIdea()">Save Spark ✦</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="overlay hidden" id="detail-overlay" onclick="oClick(event,'detail-overlay')">
+  <div class="modal fade-in">
+    <img id="d-img" class="d-img"/>
+    <video id="d-vid" class="d-vid" controls></video>
+    <div class="detail-body">
+      <div class="d-hdr">
+        <div class="d-title" id="d-title"></div>
+        <button class="mc" onclick="closeDetail()">✕</button>
+      </div>
+      <div class="d-tags" id="d-tags"></div>
+      <p class="d-desc" id="d-desc"></p>
+      <div class="dsec" id="d-audio-sec" style="display:none">
+        <div class="dsec-lbl">VOICE NOTE</div>
+        <audio id="d-audio" controls style="width:100%"></audio>
+      </div>
+      <div class="dsec" id="d-doc-sec" style="display:none">
+        <div class="dsec-lbl">DOCUMENT</div>
+        <div class="doc-box">
+          <span style="font-size:22px">📄</span>
+          <div>
+            <div id="d-doc-name" style="font-size:13px;margin-bottom:3px"></div>
+            <a id="d-doc-link" href="#" style="font-size:12px" target="_blank">Open / Download ↗</a>
+          </div>
+        </div>
+      </div>
+      <div class="dsec" id="d-vidlink-sec" style="display:none">
+        <div class="dsec-lbl">VIDEO LINK</div>
+        <a id="d-vidlink" href="#" target="_blank" style="font-size:13px;word-break:break-all;color:var(--gold)"></a>
+        <p style="font-size:11px;color:var(--text4);margin-top:4px">Tap to open in original app</p>
+      </div>
+      <div class="d-footer">
+        <span style="font-size:12px;color:var(--text4)" id="d-date"></span>
+        <div style="display:flex;gap:6px">
+          <button class="btn-annot btn" id="btn-annot" onclick="openAnnot()">✏️ Annotate</button>
+          <button class="btn-del btn" id="btn-del">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Annotation Overlay -->
+<div id="annot-overlay" class="hidden">
+  <div class="annot-bar">
+    <span style="font-family:var(--ff-d);font-size:17px;color:var(--gold)">✏️ Draw on Image</span>
+    <div style="display:flex;gap:6px">
+      <div class="ac sel" style="background:#e05555" data-c="#e05555" onclick="setAC(this)"></div>
+      <div class="ac" style="background:#c9a96e" data-c="#c9a96e" onclick="setAC(this)"></div>
+      <div class="ac" style="background:#5588ee" data-c="#5588ee" onclick="setAC(this)"></div>
+      <div class="ac" style="background:#55dd88" data-c="#55dd88" onclick="setAC(this)"></div>
+      <div class="ac" style="background:#fff" data-c="#fff" onclick="setAC(this)"></div>
+      <div class="ac" style="background:#000" data-c="#000" onclick="setAC(this)"></div>
+    </div>
+    <div class="a-size"><span>Size</span><input type="range" id="a-size" min="2" max="28" value="4"/></div>
+    <button class="btn-g btn" style="padding:6px 12px;font-size:12px" onclick="undoAnnot()">↩ Undo</button>
+    <button class="btn-g btn" style="padding:6px 12px;font-size:12px" onclick="clearAnnot()">Clear</button>
+  </div>
+  <canvas id="annot-canvas" style="border:2px solid var(--border);border-radius:8px;cursor:crosshair;max-width:92vw;max-height:62vh;touch-action:none;display:block"></canvas>
+  <div style="display:flex;gap:10px">
+    <button class="btn-g btn" style="padding:9px 22px;font-size:13px" onclick="closeAnnot()">Cancel</button>
+    <button class="btn-p btn" style="padding:9px 22px;font-size:13px" onclick="saveAnnot()">Save Annotation ✦</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut as fbOut }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc,
+         query, where, orderBy, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const cfg = {
+  apiKey:"AIzaSyA1-md2uyhLbq1m13lOfT51wcBMHSjJpWM",
+  authDomain:"idia-vault.firebaseapp.com",
+  projectId:"idia-vault",
+  storageBucket:"idia-vault.firebasestorage.app",
+  messagingSenderId:"1051816850862",
+  appId:"1:1051816850862:web:cf26bf7172d58d9c85443f"
+};
+
+const fbApp = initializeApp(cfg);
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+let currentUser = null, unsub = null;
+
+// ── State ─────────────────────────────────────────────
+let ideas = [], curView = 'bubbles', curDetailId = null;
+let capImgB64 = null, capAudioB64 = null, capDocB64 = null, capDocName = null, capVidB64 = null;
+let mediaRec = null, audChunks = [], recTimer = null, recSec = 0;
+let annotStrokes = [], annotDraw = false, annotColor = '#e05555', annotBase = null, annotCtx2 = null;
+let lastPt = null;
+
+// ── Helpers ───────────────────────────────────────────
+const $  = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmt = iso => new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+const sdt = iso => new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const tH  = (tags,n) => (n?tags.slice(0,n):tags).map(t=>`<span class="tag">#${esc(t)}</span>`).join('');
+window.toast = msg => { const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
+
+// Image compressor — returns base64 JPEG ~800px wide max
+function compressImage(file, maxW=800, quality=0.75) {
+  return new Promise(res => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxW / img.width);
+      const c = document.createElement('canvas');
+      c.width = img.width * scale; c.height = img.height * scale;
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', quality));
+    };
+    img.src = url;
+  });
+}
+
+// File → base64
+function fileToB64(file) {
+  return new Promise((res,rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ── Auth ──────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  $('loading').classList.add('hidden');
+  if (user) {
+    currentUser = user;
+    $('auth-screen').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    $('user-avatar').src = user.photoURL || '';
+    subscribeIdeas();
+  } else {
+    currentUser = null;
+    if (unsub) { unsub(); unsub = null; }
+    $('app').classList.add('hidden');
+    $('auth-screen').classList.remove('hidden');
+    ideas = [];
+  }
+});
+
+$('btn-google-signin').onclick = async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch(e) { toast('Sign-in failed: ' + e.message); }
+};
+window.doSignOut = async () => { if(confirm('Sign out?')) await fbOut(auth); };
+
+// ── Firestore ─────────────────────────────────────────
+function subscribeIdeas() {
+  if (unsub) unsub();
+  const q = query(collection(db,'ideas'), where('uid','==',currentUser.uid), orderBy('createdAt','desc'));
+  unsub = onSnapshot(q, snap => {
+    ideas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderIdeas();
+  }, err => toast('Sync error: ' + err.message));
+}
+
+// ── Views ─────────────────────────────────────────────
+window.switchView = v => {
+  curView = v;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view===v));
+  $('bubble-wrap').style.display = v==='bubbles' ? '' : 'none';
+  $('gallery').style.display     = v==='gallery' ? '' : 'none';
+  $('timeline').style.display    = v==='timeline' ? '' : 'none';
+  renderIdeas();
+};
+
+function getFiltered() {
+  const q = $('search').value.toLowerCase();
+  const cat = $('filter-cat').value, mood = $('filter-mood').value;
+  return ideas.filter(i =>
+    (!q || i.title.toLowerCase().includes(q) || (i.description||'').toLowerCase().includes(q) || (i.tags||[]).some(t=>t.toLowerCase().includes(q))) &&
+    (cat==='All' || i.category===cat) && (mood==='All' || i.mood===mood)
+  );
+}
+
+window.renderIdeas = () => {
+  const f = getFiltered();
+  $('count').textContent = `${f.length} spark${f.length!==1?'s':''}`;
+  $('empty').style.display = f.length===0 ? '' : 'none';
+  if (curView==='bubbles') renderBubbles(f);
+  else if (curView==='gallery') renderGallery(f);
+  else renderTimeline(f);
+};
+
+// ── Bubble View ───────────────────────────────────────
+function renderBubbles(filtered) {
+  const wrap = $('bubble-wrap');
+  wrap.innerHTML = '';
+  if (!filtered.length) return;
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  const placed = [];
+  const gradMap = {Design:'135deg,#1e0f3a,#0f0820',Tech:'135deg,#0a1e30,#050f18',Business:'135deg,#1a2a10,#0a1508',Life:'135deg,#2a1010,#150808',Art:'135deg,#2a1e08,#150f04',Science:'135deg,#081828,#040c14',Other:'135deg,#141428,#080814'};
+
+  filtered.forEach((idea, i) => {
+    const sz = Math.max(80, Math.min(150, 80 + Math.min((idea.description||'').length/8, 70)));
+    let x, y, tries=0;
+    do {
+      x = sz/2 + 10 + Math.random() * (W - sz - 20);
+      y = sz/2 + 10 + Math.random() * (H - sz - 20);
+      tries++;
+    } while(tries < 80 && placed.some(p => Math.hypot(p.x-x,p.y-y) < p.r+sz/2+8));
+    placed.push({x,y,r:sz/2});
+
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.style.cssText = `width:${sz}px;height:${sz}px;left:${x-sz/2}px;top:${y-sz/2}px;background:linear-gradient(${gradMap[idea.category]||gradMap.Other})`;
+
+    if (idea.annotatedImage || idea.image) {
+      const img = document.createElement('img');
+      img.src = idea.annotatedImage || idea.image;
+      img.loading = 'lazy';
+      b.appendChild(img);
+      const ov = document.createElement('div'); ov.className='bb-overlay'; b.appendChild(ov);
+    }
+    const lbl = document.createElement('div'); lbl.className='bb-label';
+    const ttl = document.createElement('div'); ttl.className='bb-title'; ttl.textContent = idea.title;
+    lbl.appendChild(ttl); b.appendChild(lbl);
+
+    // Tooltip
+    const tip = document.createElement('div'); tip.className='b-tip hidden';
+    tip.innerHTML = `<strong>${esc(idea.title)}</strong><br/><span style="color:var(--text3)">${idea.mood} · ${idea.category}</span>`;
+    wrap.appendChild(tip);
+    b.addEventListener('mouseenter', () => { tip.classList.remove('hidden'); tip.style.left=(x+sz/2+10)+'px'; tip.style.top=(y-sz/2)+'px'; });
+    b.addEventListener('mouseleave', () => tip.classList.add('hidden'));
+    b.addEventListener('click', () => openDetail(idea.id));
+
+    // Float animation
+    const dur = 3 + Math.random()*4, dly = Math.random()*3, drift = 6+Math.random()*10;
+    const kfn = `bf${i%4}`;
+    if (!document.getElementById('kf-'+kfn)) {
+      const s = document.createElement('style'); s.id='kf-'+kfn;
+      s.textContent = `@keyframes ${kfn}{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-${drift}px) scale(1.02)}}`;
+      document.head.appendChild(s);
+    }
+    b.style.animation = `${kfn} ${dur}s ${dly}s ease-in-out infinite`;
+    wrap.appendChild(b);
+  });
+}
+
+// ── Gallery ───────────────────────────────────────────
+function renderGallery(f) {
+  $('gallery').innerHTML = f.map(i => `
+    <div class="card fade-in" onclick="openDetail('${i.id}')">
+      ${(i.annotatedImage||i.image) ? `<img src="${i.annotatedImage||i.image}" loading="lazy"/>` : i.videoFile ? `<video src="${i.videoFile}" muted playsinline style="width:100%;max-height:140px;object-fit:cover"></video>` : ''}
+      <div class="card-body">
+        <div class="card-hdr"><div class="card-title">${esc(i.title)}</div><span style="font-size:16px">${i.mood.split(' ')[0]}</span></div>
+        ${i.description?`<div class="card-desc">${esc(i.description.slice(0,100))}${i.description.length>100?'…':''}</div>`:''}
+        <div class="card-tags">
+          <span class="tag">${esc(i.category)}</span>
+          ${tH(i.tags||[],2)}
+          ${i.audio?'<span class="tag">🎙</span>':''}
+          ${i.doc?'<span class="tag">📄</span>':''}
+          ${(i.videoUrl||i.videoFile)?'<span class="tag">🎬</span>':''}
+          ${i.annotatedImage?'<span class="tag">✏️</span>':''}
+        </div>
+        <div class="card-date">${fmt(i.createdAt)}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Timeline ──────────────────────────────────────────
+function renderTimeline(f) {
+  const grp = {};
+  f.forEach(i => { const k=new Date(i.createdAt).toLocaleDateString('en-US',{month:'long',year:'numeric'}); if(!grp[k])grp[k]=[]; grp[k].push(i); });
+  $('timeline').innerHTML = Object.entries(grp).map(([mo,items]) => `
+    <div class="fade-in">
+      <div class="mo-label"><span>${mo}</span><div class="mo-div"></div><span style="font-size:12px;color:var(--text4)">${items.length} sparks</span></div>
+      ${items.map(i=>`
+        <div class="tl-card" onclick="openDetail('${i.id}')">
+          ${(i.annotatedImage||i.image)?`<img class="tl-thumb" src="${i.annotatedImage||i.image}" loading="lazy"/>`:''}
+          <div class="tl-body">
+            <div class="tl-info">
+              <div class="tl-title">${esc(i.title)}</div>
+              ${i.description?`<div style="font-size:12px;color:var(--text3)">${esc(i.description.slice(0,100))}…</div>`:''}
+              <div class="tl-tags"><span class="tag">${esc(i.category)}</span>${tH(i.tags||[],3)}</div>
+            </div>
+            <div class="tl-meta"><div style="font-size:18px">${i.mood.split(' ')[0]}</div><div style="font-size:11px;color:var(--text4)">${sdt(i.createdAt)}</div></div>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── Capture ───────────────────────────────────────────
+window.openCapture = () => { $('capture-overlay').classList.remove('hidden'); showSec('basic',document.querySelectorAll('.stab')[0]); setTimeout(()=>$('f-title').focus(),100); };
+window.closeCapture = () => { $('capture-overlay').classList.add('hidden'); resetForm(); };
+window.showSec = (s, btn) => {
+  ['basic','media','docs','video','meta'].forEach(x=>$('sec-'+x).classList.add('hidden'));
+  $('sec-'+s).classList.remove('hidden');
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+};
+
+window.handleImg = async (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  toast('Compressing image…');
+  capImgB64 = await compressImage(file);
+  const p = $('f-img-prev'); p.src = capImgB64; p.style.display = 'block';
+};
+
+window.handleDoc = async (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 500*1024) { toast('Doc too large (max 500KB). Try a smaller file.'); return; }
+  toast('Reading document…');
+  capDocB64 = await fileToB64(file);
+  capDocName = file.name;
+  $('f-doc-prev').style.display = 'block';
+  $('f-doc-prev').innerHTML = `📄 <strong>${file.name}</strong> — ${(file.size/1024).toFixed(1)} KB`;
+};
+
+window.handleVid = async (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 5*1024*1024) { toast('Video too large for free plan (max ~5MB). Use a link instead.'); e.target.value=''; return; }
+  toast('Reading video…');
+  capVidB64 = await fileToB64(file);
+  const url = URL.createObjectURL(file);
+  $('f-vid-el').src = url; $('f-vid-prev').style.display = 'block';
+};
+
+window.toggleRec = async () => {
+  if (mediaRec && mediaRec.state==='recording') { mediaRec.stop(); clearInterval(recTimer); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    audChunks = [];
+    mediaRec = new MediaRecorder(stream);
+    mediaRec.ondataavailable = e => audChunks.push(e.data);
+    mediaRec.onstop = async () => {
+      const blob = new Blob(audChunks, {type:'audio/webm'});
+      if (blob.size > 1024*1024) { toast('Voice note too long (keep under ~1 min for best results)'); }
+      capAudioB64 = await fileToB64(blob);
+      const url = URL.createObjectURL(blob);
+      $('f-audio').src = url; $('f-audio').style.display = 'block';
+      $('clear-audio').style.display = 'block';
+      $('rec-btn').textContent = '● Re-record';
+      $('rec-btn').style.color=''; $('rec-btn').style.borderColor='';
+      $('rec-time').style.display='none';
+      stream.getTracks().forEach(t=>t.stop());
+    };
+    mediaRec.start(); recSec=0;
+    $('rec-btn').innerHTML='<span class="pulse"></span>Stop'; $('rec-btn').style.color='var(--red)'; $('rec-btn').style.borderColor='var(--red)';
+    $('rec-time').style.display='inline'; $('rec-time').textContent='0s';
+    recTimer = setInterval(()=>{ recSec++; $('rec-time').textContent=recSec+'s'; },1000);
+  } catch(e) { alert('Microphone access denied.'); }
+};
+
+window.clearAudio = () => {
+  capAudioB64=null; $('f-audio').style.display='none'; $('f-audio').src='';
+  $('clear-audio').style.display='none'; $('rec-btn').textContent='● Start Recording';
+  $('rec-btn').style.color=''; $('rec-btn').style.borderColor='';
+};
+
+function resetForm() {
+  ['f-title','f-tags','f-vid-url'].forEach(id=>$(id).value='');
+  $('f-desc').value=''; $('f-img-in').value=''; $('f-doc-in').value=''; $('f-vid-in').value='';
+  $('f-img-prev').style.display='none'; $('f-doc-prev').style.display='none'; $('f-vid-prev').style.display='none';
+  capImgB64=null; capAudioB64=null; capDocB64=null; capDocName=null; capVidB64=null;
+  window.clearAudio();
+  if(mediaRec && mediaRec.state==='recording'){mediaRec.stop(); clearInterval(recTimer);}
+}
+
+window.saveIdea = async () => {
+  const title = $('f-title').value.trim();
+  if (!title) { showSec('basic',document.querySelectorAll('.stab')[0]); $('f-title').focus(); return; }
+  $('btn-save').disabled=true; $('save-status').style.display='block';
+  try {
+    await addDoc(collection(db,'ideas'), {
+      uid: currentUser.uid,
+      title,
+      description: $('f-desc').value.trim(),
+      image: capImgB64 || null,
+      annotatedImage: null,
+      audio: capAudioB64 || null,
+      doc: capDocB64 || null,
+      docName: capDocName || null,
+      videoUrl: $('f-vid-url').value.trim() || null,
+      videoFile: capVidB64 || null,
+      mood: $('f-mood').value,
+      category: $('f-cat').value,
+      tags: $('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+      createdAt: new Date().toISOString(),
+    });
+    toast('Spark saved ✦');
+    closeCapture();
+  } catch(e) {
+    toast('Error: ' + e.message);
+    if (e.message.includes('exceeds')) toast('Data too large — try a smaller image or shorter voice note.');
+  }
+  $('btn-save').disabled=false; $('save-status').style.display='none';
+};
+
+// ── Detail ────────────────────────────────────────────
+window.openDetail = id => {
+  const idea = ideas.find(i=>i.id===id); if(!idea) return;
+  curDetailId = id;
+  const di=$('d-img'), dv=$('d-vid');
+  di.style.display='none'; dv.style.display='none';
+  if (idea.annotatedImage) { di.src=idea.annotatedImage; di.style.display='block'; }
+  else if (idea.image) { di.src=idea.image; di.style.display='block'; }
+  if (idea.videoFile && !idea.image && !idea.annotatedImage) { dv.src=idea.videoFile; dv.style.display='block'; }
+  $('d-title').textContent=idea.title;
+  $('d-tags').innerHTML=`<span class="d-mood-tag">${idea.mood}</span><span class="tag">${esc(idea.category)}</span>${tH(idea.tags||[])}`;
+  const dd=$('d-desc'); if(idea.description){dd.textContent=idea.description;dd.style.display='';}else dd.style.display='none';
+  const as=$('d-audio-sec'); if(idea.audio){$('d-audio').src=idea.audio;as.style.display='';}else as.style.display='none';
+  const ds=$('d-doc-sec'); if(idea.doc){$('d-doc-name').textContent=idea.docName||'Document';$('d-doc-link').href=idea.doc;ds.style.display='';}else ds.style.display='none';
+  const vs=$('d-vidlink-sec'); if(idea.videoUrl){const a=$('d-vidlink');a.href=idea.videoUrl;a.textContent=idea.videoUrl;vs.style.display='';}else vs.style.display='none';
+  $('d-date').textContent='Captured '+fmt(idea.createdAt);
+  $('btn-del').onclick=()=>deleteIdea(id);
+  $('btn-annot').style.display=(idea.image||idea.annotatedImage)?'':'none';
+  $('detail-overlay').classList.remove('hidden');
+};
+
+window.closeDetail = () => {
+  $('detail-overlay').classList.add('hidden');
+  $('d-audio').pause(); curDetailId=null;
+};
+
+window.deleteIdea = async id => {
+  if(!confirm('Delete this spark?')) return;
+  try { await deleteDoc(doc(db,'ideas',id)); toast('Deleted'); closeDetail(); }
+  catch(e) { toast('Error: '+e.message); }
+};
+
+// ── Annotation ────────────────────────────────────────
+window.openAnnot = () => {
+  const idea = ideas.find(i=>i.id===curDetailId); if(!idea) return;
+  const src = idea.annotatedImage || idea.image; if(!src) return;
+  const canvas = $('annot-canvas');
+  annotCtx2 = canvas.getContext('2d');
+  annotStrokes = [];
+  const img = new Image();
+  img.onload = () => {
+    const mw=Math.min(window.innerWidth*.9,900), mh=window.innerHeight*.6;
+    const sc=Math.min(mw/img.width, mh/img.height, 1);
+    canvas.width=img.width*sc; canvas.height=img.height*sc;
+    annotCtx2.drawImage(img,0,0,canvas.width,canvas.height);
+    annotBase = annotCtx2.getImageData(0,0,canvas.width,canvas.height);
+    $('annot-overlay').classList.remove('hidden');
+  };
+  img.crossOrigin='anonymous'; img.src=src;
+};
+window.closeAnnot = () => $('annot-overlay').classList.add('hidden');
+window.setAC = el => { document.querySelectorAll('.ac').forEach(e=>e.classList.remove('sel')); el.classList.add('sel'); annotColor=el.dataset.c; };
+
+const aC = $('annot-canvas');
+function gPos(e){ const r=aC.getBoundingClientRect(),t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*(aC.width/r.width),y:(t.clientY-r.top)*(aC.height/r.height)}; }
+aC.addEventListener('mousedown',e=>{annotDraw=true;lastPt=gPos(e);annotStrokes.push({c:annotColor,s:parseInt($('a-size').value),pts:[lastPt]});});
+aC.addEventListener('mousemove',e=>{if(!annotDraw)return;const p=gPos(e),s=annotStrokes[annotStrokes.length-1];s.pts.push(p);annotCtx2.strokeStyle=s.c;annotCtx2.lineWidth=s.s;annotCtx2.lineCap='round';annotCtx2.lineJoin='round';annotCtx2.beginPath();annotCtx2.moveTo(lastPt.x,lastPt.y);annotCtx2.lineTo(p.x,p.y);annotCtx2.stroke();lastPt=p;});
+aC.addEventListener('mouseup',()=>annotDraw=false);
+aC.addEventListener('touchstart',e=>{e.preventDefault();annotDraw=true;lastPt=gPos(e);annotStrokes.push({c:annotColor,s:parseInt($('a-size').value),pts:[lastPt]});},{passive:false});
+aC.addEventListener('touchmove',e=>{e.preventDefault();if(!annotDraw)return;const p=gPos(e),s=annotStrokes[annotStrokes.length-1];s.pts.push(p);annotCtx2.strokeStyle=s.c;annotCtx2.lineWidth=s.s;annotCtx2.lineCap='round';annotCtx2.lineJoin='round';annotCtx2.beginPath();annotCtx2.moveTo(lastPt.x,lastPt.y);annotCtx2.lineTo(p.x,p.y);annotCtx2.stroke();lastPt=p;},{passive:false});
+aC.addEventListener('touchend',()=>annotDraw=false);
+
+window.undoAnnot = () => {
+  if(!annotStrokes.length)return; annotStrokes.pop();
+  if(annotBase)annotCtx2.putImageData(annotBase,0,0);
+  annotStrokes.forEach(s=>{annotCtx2.strokeStyle=s.c;annotCtx2.lineWidth=s.s;annotCtx2.lineCap='round';annotCtx2.lineJoin='round';annotCtx2.beginPath();s.pts.forEach((p,i)=>i===0?annotCtx2.moveTo(p.x,p.y):annotCtx2.lineTo(p.x,p.y));annotCtx2.stroke();});
+};
+window.clearAnnot = () => { annotStrokes=[]; if(annotBase)annotCtx2.putImageData(annotBase,0,0); };
+
+window.saveAnnot = async () => {
+  const dataUrl = $('annot-canvas').toDataURL('image/jpeg',0.85);
+  try {
+    await updateDoc(doc(db,'ideas',curDetailId),{annotatedImage:dataUrl});
+    toast('Annotation saved ✦');
+    closeAnnot();
+    $('d-img').src=dataUrl; $('d-img').style.display='block';
+  } catch(e) { toast('Error saving: '+e.message); }
+};
+
+// ── Misc ──────────────────────────────────────────────
+window.oClick = (e,id) => { if(e.target===$(id)){ if(id==='capture-overlay')closeCapture(); else closeDetail(); } };
+document.addEventListener('keydown', e => { if(e.key==='Escape'){closeCapture();closeDetail();closeAnnot();} });
+window.addEventListener('resize', () => { if(curView==='bubbles') renderBubbles(getFiltered()); });
+</script>
+</body>
+</html>
